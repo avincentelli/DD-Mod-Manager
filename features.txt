@@ -1,0 +1,32 @@
+==Features==
+- Install
+- Uninstall (i.e. revert to vanilla)
+- Update
+
+==Details==
+- Install: Check all the files in the _mods folder. Find the related files in the game folder and back them up to _bak folder. Copy the files from the _mods folder to the game and overwrite.
+- Uninstall: Copy all the files from the _bak folder into the game and overwrite.
+- Update: Compare the files in both the _mods folder and in the game, and, if the _mods file is newer, copy it to the game. DOES NOT create a backup.
+
+==Problems==
+Install:
+- Need to be able to run Install more than once without losing backed up files and only backing up original files.
+
+Uninstall:
+- Utmost importance that files in _bak folder are NEVER overwritten, but that makes creating new (updated) backup more difficult. Maybe do hash compare to ensure restored file is exactly the same, then delete backup?
+- If Steam updates game, may break modded files (possibly also game itself). Options:
+-- Purge/Clean Install feature? (Would reset all _bak files)
+-- Uninstall, then Steam Integrity Check, then Install again? (*Will* break install now but may fix in long run)
+
+Update:
+- Should not update any files that don't have a backup.
+
+==Methodology==
+Install:
+1. Check for existence of _mods folder.
+-a. Continue if present, else create and throw error to put mods there.
+-b. Mods in _mods folder should follow the same folder structure as the files they replace in the actual game.
+2. Check for install location of game.
+-- Check for existence of installLoc.txt file.
+---- If found, validate stored path. If pass, 
+-- If found, create installLoc.txt file and write location to it for later reference.
