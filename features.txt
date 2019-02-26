@@ -4,29 +4,60 @@
 - Update
 
 ==Details==
-- Install: Check all the files in the _mods folder. Find the related files in the game folder and back them up to _bak folder. Copy the files from the _mods folder to the game and overwrite.
-- Uninstall: Copy all the files from the _bak folder into the game and overwrite.
+- Install: Check all the files in the _mods folder. Find the related files in the game folder and copy them to _bak folder. Copy the files from the _mods folder to the game and overwrite.
+- Uninstall: Copy all the files from the _bak folder into the game and overwrite. Remove added files that had no direct replacement (e.g. additional hero skins).
 - Update: Compare the files in both the _mods folder and in the game, and, if the _mods file is newer, copy it to the game. DOES NOT create a backup.
 
 ==Problems==
 Install:
 - Need to be able to run Install more than once without losing backed up files and only backing up original files.
+- Some files (particularly hero skins) do not need to overwrite originals and will not necessarily create a backup. Need to be careful about unexpected handling.
 
 Uninstall:
-- Utmost importance that files in _bak folder are NEVER overwritten, but that makes creating new (updated) backup more difficult. Maybe do hash compare to ensure restored file is exactly the same, then delete backup?
+- Utmost importance that files in _bak folder are NEVER overwritten, but that makes creating new (updated) backup more difficult. Maybe do checksum after restore to ensure restored file is exactly the same, then delete backup?
 - If Steam updates game, may break modded files (possibly also game itself). Options:
 -- Purge/Clean Install feature? (Would reset all _bak files)
 -- Uninstall, then Steam Integrity Check, then Install again? (*Will* break install now but may fix in long run)
 
 Update:
-- Should not update any files that don't have a backup.
+- Should not update any files that don't have a backup, except for additional hero skins (which do not reqire overwriting the original files).
 
 ==Methodology==
 Install:
-1. Check for existence of _mods folder.
--a. Continue if present, else create and throw error to put mods there.
+1. Check for existence of _mods folder in script root.
+-a. Continue if present, else create it and a README file, and throw error to put mods there.
 -b. Mods in _mods folder should follow the same folder structure as the files they replace in the actual game.
 2. Check for install location of game.
--- Check for existence of installLoc.txt file.
----- If found, validate stored path. If pass, 
--- If found, create installLoc.txt file and write location to it for later reference.
+-a. Check for existence of installLoc.txt file.
+--i. If found, validate stored path.
+---1) If pass, skip to Step 3.
+---2) If fail, continue below.
+-b. Check default install locations for Steam and non-Steam (in that order), the do recursive search of all folders in C drive.
+--i. If found at any point, create installLoc.txt file in script dir and write install location to it for later reference, then skip to Step 3.
+--ii. If still not found, throw error "Install not found in C: drive".
+3. Back up original files.
+-a. Save install location to a variable and _mods location to another variable.
+-b. Create _bak folder in script root if not already present.
+-c. Compare all files in _mods folder with those in install directory (i.e. take filepath of each file in _mods folder, substitute _mods dir with install dir, and check for existence).
+--i. If exists, copy original file and folder structure to _bak folder.
+--ii. If not exists, continue.
+4. Install mod files.
+-a. Bulk copy all files in _mods folder to install dir and overwrite (-force -erroraction silentlycontinue).
+
+Uninstall:
+1. Restore _bak files.
+-a. Bulk copy all files in _bak folder to install dir and overwrite.
+-b. Recursively go through 'heroes' folder in install dir. Within each hero's folder, delete any folders (only one level deep) that don't match '[hero]_A' through '[hero]_D'.
+
+Update:
+1. Verify the file is valid to update. For each file in _mods:
+-a. Check if it has a corresponding file in the install dir.
+--i. If yes, continue.
+--ii. If no, create a running log of "The following files are not installed:", then skip the file.
+-b. Check if the file is in the 'heroes' filepath.
+--i. If so, check if the hero folder ends in A-D.
+---1) If yes, continue.
+---2) If no, skip to Step 2.
+--ii. If no, continue.
+-c. 
+2. Force replace the file(s) with the updated copy in _mods.
